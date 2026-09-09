@@ -1,0 +1,99 @@
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Environments ----------------------------------------------------------
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# --- Testing / coverage ----------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+
+# --- Notebooks -------------------------------------------------------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- Datasets --------------------------------------------------------------
+# Never commit data. Keep the tree reproducible from a download script instead.
+data/
+datasets/
+*.tar
+*.tar.gz
+*.zip
+*.h5
+*.hdf5
+*.lmdb
+*.tfrecord
+*.arrow
+
+# --- Checkpoints & artifacts ----------------------------------------------
+# Model weights are large and binary; use a release, W&B, or the HF Hub.
+checkpoints/
+checkpoints_clip/
+outputs/
+runs/
+logs/
+wandb/
+lightning_logs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+history.json
+tokenizer.json
+
+# --- Profiling / debug -----------------------------------------------------
+*.prof
+*.trace
+*.nsys-rep
+*.sqlite
+
+# --- Editors / OS ----------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

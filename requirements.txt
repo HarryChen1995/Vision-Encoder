@@ -1,0 +1,15 @@
+# Core -----------------------------------------------------------------------
+# torch>=2.0 is required for F.scaled_dot_product_attention (the fused
+# FlashAttention / memory-efficient kernels used in vision_encoder/attention.py).
+torch>=2.0
+numpy>=1.23
+
+# Data pipeline --------------------------------------------------------------
+# Needed for the real-dataset paths in train.py / train_clip.py (CIFAR,
+# ImageFolder, RandAugment, RandomErasing). The library itself imports neither,
+# and `--dummy` runs the full training loop on synthetic data without them.
+torchvision>=0.15
+pillow>=9.0
+
+# Testing --------------------------------------------------------------------
+pytest>=7.0
