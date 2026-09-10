@@ -131,8 +131,7 @@ patches and linearly project each one.
 
 $$
 \mathbf{z}_0 = [\, \mathbf{x}_\text{cls} \;;\; \mathbf{x}^1_p \mathbf{E} \;;\;
-\mathbf{x}^2_p \mathbf{E} \;;\; \dots \;;\; \mathbf{x}^N_p \mathbf{E} \,]
-+ \mathbf{E}_\text{pos},
+\mathbf{x}^2_p \mathbf{E} \;;\; \dots \;;\; \mathbf{x}^N_p \mathbf{E} \,] + \mathbf{E}_\text{pos},
 \qquad
 \mathbf{E} \in \mathbb{R}^{(P^2 C) \times D}
 $$
@@ -184,8 +183,7 @@ frequency pair as a **fixed rotation independent of $p$**:
 
 $$
 \begin{bmatrix}\sin(\omega(p{+}k))\\ \cos(\omega(p{+}k))\end{bmatrix}
-=
-\begin{bmatrix}\cos \omega k & \sin \omega k\\ -\sin \omega k & \cos \omega k\end{bmatrix}
+= \begin{bmatrix}\cos \omega k & \sin \omega k\\ -\sin \omega k & \cos \omega k\end{bmatrix}
 \begin{bmatrix}\sin(\omega p)\\ \cos(\omega p)\end{bmatrix},
 $$
 
@@ -679,4 +677,4 @@ parameter of both towers.
 
 ## License
 
-MIT.
+Released under the [MIT License](LICENSE).
