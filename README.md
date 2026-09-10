@@ -47,7 +47,6 @@ text  ─▶ tokenize ─▶ +pos ─▶ [causal block]×L ─▶ LN ─▶ [EOT
 ## Installation
 
 ```bash
-git clone <this-repo> && cd vision_encoder
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -129,12 +128,12 @@ An image is a grid; a Transformer eats a sequence. ViT bridges the two in the
 crudest way that works: tile the image into non-overlapping $P \times P$
 patches and linearly project each one.
 
-$$
+```math
 \mathbf{z}_0 = [\, \mathbf{x}_\text{cls} \;;\; \mathbf{x}^1_p \mathbf{E} \;;\;
 \mathbf{x}^2_p \mathbf{E} \;;\; \dots \;;\; \mathbf{x}^N_p \mathbf{E} \,] + \mathbf{E}_\text{pos},
 \qquad
 \mathbf{E} \in \mathbb{R}^{(P^2 C) \times D}
-$$
+```
 
 **The Conv2d identity.** Extracting patches, flattening them and applying a
 shared $\mathbf{E}$ is *exactly* a convolution with `kernel_size = stride = P`:
@@ -153,9 +152,9 @@ more expensive. Small patches resolve fine detail; large patches are cheap.
 Self-attention is permutation-equivariant: for any permutation matrix
 $\mathbf{\Pi}$,
 
-$$
+```math
 \text{Attn}(\mathbf{\Pi}\mathbf{X}) = \mathbf{\Pi}\,\text{Attn}(\mathbf{X}).
-$$
+```
 
 The model therefore cannot distinguish a patch's location from its content —
 a property this repository tests explicitly
@@ -168,24 +167,24 @@ parameter $\mathbf{E}_\text{pos} \in \mathbb{R}^{(N+1) \times D}$.
 **Fixed 2D sin–cos** (`"sincos"`, used by MAE/DINO): for a patch at grid
 position $(r, c)$, half the channels encode the row and half the column,
 
-$$
+```math
 \text{PE}(p, 2i) = \sin\!\left(\frac{p}{10000^{2i/(D/2)}}\right),
 \qquad
 \text{PE}(p, 2i{+}1) = \cos\!\left(\frac{p}{10000^{2i/(D/2)}}\right),
-$$
+```
 
-$$
+```math
 \mathbf{E}_\text{pos}(r,c) = \big[\,\text{PE}(r) \;\Vert\; \text{PE}(c)\,\big].
-$$
+```
 
 The reason sinusoids help is that a shift $p \mapsto p + k$ acts on each
 frequency pair as a **fixed rotation independent of $p$**:
 
-$$
+```math
 \begin{bmatrix}\sin(\omega(p{+}k))\\ \cos(\omega(p{+}k))\end{bmatrix}
 = \begin{bmatrix}\cos \omega k & \sin \omega k\\ -\sin \omega k & \cos \omega k\end{bmatrix}
 \begin{bmatrix}\sin(\omega p)\\ \cos(\omega p)\end{bmatrix},
-$$
+```
 
 so relative offsets are linear maps — precisely the structure the attention
 dot product can exploit.
@@ -201,36 +200,36 @@ without any code change (`test_vit_handles_new_resolution`).
 Each token emits a query, a key and a value; the output is a similarity-weighted
 average of values.
 
-$$
+```math
 \mathbf{Q} = \mathbf{X}\mathbf{W}_Q, \quad
 \mathbf{K} = \mathbf{X}\mathbf{W}_K, \quad
 \mathbf{V} = \mathbf{X}\mathbf{W}_V,
-$$
+```
 
-$$
+```math
 \boxed{\;
 \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
 = \text{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}} + \mathbf{M}\right)\mathbf{V}
 \;}
-$$
+```
 
 with $\mathbf{M}$ an optional additive mask ($-\infty$ forbids a pair, since
 $e^{-\infty} = 0$). Multi-head attention runs $h$ of these in parallel on
 $d = D/h$ channels each:
 
-$$
+```math
 \text{MHSA}(\mathbf{X}) = \big[\text{head}_1 \Vert \cdots \Vert \text{head}_h\big]\mathbf{W}_O,
 \qquad
 \text{head}_i = \text{Attention}(\mathbf{X}\mathbf{W}_Q^i, \mathbf{X}\mathbf{W}_K^i, \mathbf{X}\mathbf{W}_V^i).
-$$
+```
 
 **Why $1/\sqrt{d}$.** If $q_j, k_j$ are independent with zero mean and unit
 variance, then
 
-$$
+```math
 \text{Var}\!\left(\mathbf{q}\cdot\mathbf{k}\right)
 = \text{Var}\!\left(\sum_{j=1}^{d} q_j k_j\right) = d .
-$$
+```
 
 Un-normalized scores therefore grow like $\sqrt{d}$, pushing softmax toward a
 one-hot distribution where its Jacobian
@@ -258,11 +257,11 @@ for attention-map extraction and is tested against the fused one
 
 ## 4. The feed-forward network
 
-$$
+```math
 \text{MLP}(\mathbf{x}) = \mathbf{W}_2\,\sigma(\mathbf{W}_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2,
 \qquad
 \mathbf{W}_1 \in \mathbb{R}^{rD \times D},\; r = 4 .
-$$
+```
 
 Attention is, once its weights are fixed, a *linear* map on the values — the
 only nonlinearity lives inside the softmax that produces the weights. The MLP
@@ -281,12 +280,12 @@ key–value memory [12].
 
 ## 5. Pre-norm residual blocks
 
-$$
+```math
 \begin{aligned}
 \mathbf{z}'_\ell &= \mathbf{z}_{\ell-1} + \text{DropPath}\big(\gamma_1 \odot \text{MHSA}(\text{LN}(\mathbf{z}_{\ell-1}))\big), \\
 \mathbf{z}_\ell  &= \mathbf{z}'_\ell + \text{DropPath}\big(\gamma_2 \odot \text{MLP}(\text{LN}(\mathbf{z}'_\ell))\big).
 \end{aligned}
-$$
+```
 
 **Pre-norm vs post-norm.** The original Transformer [3] normalized *after* the
 residual add, $\mathbf{z} = \text{LN}(\mathbf{z} + f(\mathbf{z}))$, placing a
@@ -294,9 +293,9 @@ LayerNorm directly on the residual path so that gradients are rescaled at each
 of $L$ layers. Pre-norm normalizes only the branch *input*, leaving the
 residual path a clean sum. Its Jacobian is
 
-$$
+```math
 \frac{\partial \mathbf{z}_\ell}{\partial \mathbf{z}_{\ell-1}} = \mathbf{I} + \frac{\partial f}{\partial \mathbf{z}_{\ell-1}},
-$$
+```
 
 so gradient reaches early layers through the identity term even when $f' \to 0$.
 This is what makes 24+ layer stacks trainable without delicate warmup [4]. The
@@ -319,11 +318,11 @@ identity and the network starts effectively shallow, then deepens itself.
 
 Two options, both supported:
 
-$$
+```math
 \mathbf{f}_\text{cls} = \mathbf{z}_L^{(0)},
 \qquad
 \mathbf{f}_\text{avg} = \frac{1}{N}\sum_{i=1}^{N} \mathbf{z}_L^{(i + n_\text{prefix})}.
-$$
+```
 
 The `[CLS]` token is a learned vector, identical for every image, that owns no
 pixels and is therefore free to act as an accumulator across $L$ rounds of
@@ -376,24 +375,24 @@ an image and its caption to the *same point* on a unit hypersphere. Supervision
 comes from pairing alone, so the training set is the web rather than a labeled
 corpus.
 
-$$
+```math
 \mathbf{z}^I_i = \frac{\mathbf{W}_I\, f_I(\mathbf{x}_i)}{\lVert \mathbf{W}_I\, f_I(\mathbf{x}_i)\rVert_2},
 \qquad
 \mathbf{z}^T_i = \frac{\mathbf{W}_T\, f_T(\mathbf{t}_i)}{\lVert \mathbf{W}_T\, f_T(\mathbf{t}_i)\rVert_2}.
-$$
+```
 
 ## 1. The contrastive objective
 
 For a batch of $N$ pairs, form the scaled cosine-similarity matrix
 
-$$
+```math
 \mathbf{S}_{ij} = \frac{1}{\tau}\, \mathbf{z}^I_i \cdot \mathbf{z}^T_j .
-$$
+```
 
 The correct match is always the diagonal, so the loss is symmetric
 cross-entropy against the identity permutation:
 
-$$
+```math
 \boxed{\;
 \mathcal{L} = \frac{1}{2N}\sum_{i=1}^{N}
 \left[
@@ -401,7 +400,7 @@ $$
 -\log \frac{e^{\mathbf{S}_{ii}}}{\sum_{j=1}^{N} e^{\mathbf{S}_{ji}}}
 \right]
 \;}
-$$
+```
 
 The first term is image→text retrieval, the second text→image; averaging keeps
 neither modality privileged. Each is InfoNCE [9] with one positive and $N-1$
@@ -419,9 +418,9 @@ magnitude as a degenerate axis the model would otherwise inflate. But it also
 compresses all logits into a range where softmax is nearly uniform. The
 temperature $\tau$ rescales them; CLIP *learns* it, parameterizing
 
-$$
+```math
 s = \log(1/\tau), \qquad 1/\tau = e^{s}, \qquad e^{s} \le 100 ,
-$$
+```
 
 so that $1/\tau$ stays positive under unconstrained gradient descent. The clamp
 matters: an unbounded temperature sharpens without limit and is a documented
@@ -430,9 +429,9 @@ as in the paper.
 
 The InfoNCE objective lower-bounds the mutual information between the two views,
 
-$$
+```math
 I(\mathbf{z}^I; \mathbf{z}^T) \;\ge\; \log N - \mathcal{L},
-$$
+```
 
 which is the formal reason CLIP needs enormous batches: **the bound itself is
 capped at $\log N$.** OpenAI used $N = 32{,}768$ across 256 GPUs.
@@ -448,11 +447,11 @@ capped at $\log N$.** OpenAI used $N = 32{,}768$ across 256 GPUs.
 Because the text tower embeds *arbitrary strings*, a trained CLIP classifies
 without a classifier. Embed a prompt per class and take the nearest:
 
-$$
+```math
 \hat{y} = \arg\max_c \; \mathbf{z}^I \cdot \mathbf{w}_c,
 \qquad
 \mathbf{w}_c = \frac{\sum_{k} \mathbf{z}^T(\text{prompt}_k(c))}{\lVert \sum_{k} \mathbf{z}^T(\text{prompt}_k(c)) \rVert_2}.
-$$
+```
 
 The text encoder has synthesized the weights of a linear classifier from
 language alone. Averaging several phrasings per class before renormalizing —
@@ -489,9 +488,9 @@ then divided by $\sqrt{\hat{v}}$, so frequently-updated weights get decayed
 *less* — the coupling makes weight decay behave unpredictably. AdamW decouples
 it:
 
-$$
+```math
 \theta_{t+1} = \theta_t - \eta \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda \theta_t \right).
-$$
+```
 
 **Parameter groups matter.** Decay is applied only to tensors with
 $\text{ndim} \ge 2$. Decaying a LayerNorm gain, a bias, a positional embedding,
@@ -502,13 +501,13 @@ matrices, never vectors*; skipping it typically costs 0.5–1% top-1
 
 ### Learning-rate schedule
 
-$$
+```math
 \eta_t =
 \begin{cases}
 \dfrac{t}{T_w}\,\eta_{\max}, & t < T_w \\[2ex]
 \eta_{\min} + \dfrac{1}{2}(\eta_{\max} - \eta_{\min})\left(1 + \cos\dfrac{\pi (t - T_w)}{T - T_w}\right), & t \ge T_w
 \end{cases}
-$$
+```
 
 **Warmup is not optional for Transformers.** At initialization, predictions are
 arbitrary and gradients are large and poorly correlated with any useful
@@ -537,11 +536,11 @@ fast drop in between, and adds no hyperparameters.
 Mixup and CutMix both draw $\lambda \sim \text{Beta}(\alpha, \alpha)$ and pair
 each sample with a reversed copy of the batch:
 
-$$
+```math
 \tilde{\mathbf{x}} = \lambda \mathbf{x}_a + (1-\lambda)\mathbf{x}_b,
 \qquad
 \tilde{y} = \lambda y_a + (1-\lambda) y_b .
-$$
+```
 
 For CutMix, $\lambda$ is recomputed from the *realized* box area after
 clipping, so the label mix always matches the pixel evidence. Because the
@@ -570,11 +569,11 @@ a softmax over cosines scaled by up to $1/\tau = 100$ is numerically delicate.
 
 The zero-initialized classifier head gives an exact, checkable starting point:
 
-$$
+```math
 \mathcal{L}_0 = \log C \quad (\text{2.303 for CIFAR-10}),
 \qquad
 \mathcal{L}^\text{CLIP}_0 = \log N .
-$$
+```
 
 If your first loss is not that number, something is wrong before training even
 begins. The `--dummy` path is the second check: random labels are unlearnable
