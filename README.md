@@ -189,8 +189,8 @@ frequency pair as a **fixed rotation independent of $p$**:
 so relative offsets are linear maps — precisely the structure the attention
 dot product can exploit.
 
-**Changing resolution.** A model pretrained at $224$px has a $14\times14$
-position grid; fine-tuning at $384$px needs $24\times24$. `interpolate_pos_embed`
+**Changing resolution.** A model pretrained at 224px has a $14\times14$
+position grid; fine-tuning at 384px needs $24\times24$. `interpolate_pos_embed`
 reshapes the table to 2D, resizes it bicubically, and flattens it back. This
 happens automatically in `forward`, so a 32px-trained model accepts 64px input
 without any code change (`test_vit_handles_new_resolution`).
@@ -608,7 +608,7 @@ CLIP presets (vocabulary 30k, 224px, $P=16$; both towers plus projections):
 | `clip_small` | $D{=}384$, $L{=}12$ | $D{=}384$, $L{=}6$ | 384 | 44.2M |
 | `clip_base` | $D{=}768$, $L{=}12$ | $D{=}512$, $L{=}12$ | 512 | 139.7M |
 
-For small images, override the patch size — CIFAR at $32$px with $P=4$ gives
+For small images, override the patch size — CIFAR at 32px with $P=4$ gives
 64 tokens, a sensible sequence length:
 
 ```bash
